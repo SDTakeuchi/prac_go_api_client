@@ -13,8 +13,14 @@ type Client struct {
 }
 
 func NewClient(host string, timeout time.Duration) *Client {
+	tr := &http.Transport{
+		MaxIdleConns:       10,
+		IdleConnTimeout:    30 * time.Second,
+		DisableCompression: true,
+	}
 	client := &http.Client{
 		Timeout: timeout,
+		Transport:  tr,
 	}
 	return &Client{
 		host:       host,
@@ -37,14 +43,14 @@ func (c *Client) Do(method, endpoint string, params map[string]string) (*http.Re
 	return c.httpClient.Do(req)
 }
 
-const jsonMockUrl = "/posts"
-
 type Post struct {
 	UserID int    `json:"userId"`
 	ID     int    `json:"id"`
 	Title  string `json:"title"`
 	Body   string `json:"body"`
 }
+
+const jsonMockUrl = "/posts"
 
 func (c *Client) GetPosts() (resp []Post, err error) {
 	res, err := c.Do(http.MethodGet, jsonMockUrl, nil)
